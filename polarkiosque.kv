@@ -1,0 +1,72 @@
+#:kivy 1.0
+#:import kivy kivy
+
+<PolarKiosque>:
+    content: content
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Rectangle:
+            source: 'data/images/background.jpg'
+            size: self.size
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        FloatLayout:
+            id: content
+
+        BoxLayout:
+            padding: 10
+            spacing: 10
+            size_hint: 1, None
+            pos_hint: {'top': 1}
+            height: 62
+            Image:
+                size_hint: None, None
+                size: 24, 24
+                source: 'data/logo/kivy-icon-24.png'
+            Label:
+                height: 24
+                text_size: self.size
+                color: (1, 1, 1, .8)
+                text: 'PolarKiosque 0.1'
+			Button:
+				width: self.parent.width/10 # non pris en compte
+				text: "Éjecter la clé et revenir à l'accueil"
+
+
+<PreviewScreen>:
+	path: path
+	
+	BoxLayout:
+		orientation: 'horizontal'
+		Label:
+			size_hint: 3, None
+			id: path
+			text: 'bla'
+		BoxLayout:
+			orientation: 'vertical'
+			BoxLayout:
+				orientation: 'horizontal'
+				ToggleButton:
+					text: 'Noir & blanc'
+					group: 'imprimante'
+					state: 'down'
+					on_release: self.parent.parent.parent.parent.on_release_choix
+				ToggleButton
+					text: 'Couleur'
+					group: 'imprimante'
+			BoxLayout:
+				orientation: 'horizontal'
+				ToggleButton:
+					text: 'Normal'
+					group: 'type'
+					state: 'down'
+				ToggleButton:
+					text: 'Recto-verso'
+					group: 'type'
+			Label:
+				text: 'Total : 0 pages / 0 €'
+			Button:
+				text: "Lancer l'impression"
