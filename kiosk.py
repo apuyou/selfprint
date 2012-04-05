@@ -57,7 +57,7 @@ class PolarKiosqueApp(App):
 			self.content.add_widget(w)
 			Clock.schedule_once(self.show_key, .5/10) # VIRER LE /10
 			return False
-	
+
 	def show_key(self, gloup):
 		tree = TreeView(size_hint=(1, 1), hide_root=True,
 				indent_level=20)
@@ -69,18 +69,18 @@ class PolarKiosqueApp(App):
 				size = size / 1024.0
 				unit = unit + 1
 			return "%.2f %s" % (size, units[unit])
-				
+
 
 		tree.bind(selected_node=self.show_file)
-		
+
 		self.content.clear_widgets()
 		self.content.add_widget(tree)
 		dirNodes = dict()
-		
+
 		# la racine
 		dirNodes[path_to_watch] = tree.add_node(TreeViewLabel(
 			text="Ordinateur", is_open=True, no_selection=True))
-		
+
 		for root, dirs, files in os.walk(path_to_watch):
 			for diritem in dirs:
 				fulldiritem = os.path.join(root, diritem)
@@ -93,31 +93,31 @@ class PolarKiosqueApp(App):
 					if ext == '.pdf':
 						tree.add_node(TreeViewLabelPath(os.path.join(root, fileitem), text=label), dirNodes[root])
 					else:
-						tree.add_node(TreeViewLabel(text=label, no_selection=True), dirNodes[root]) # FIXME Faire du gris	
-	
+						tree.add_node(TreeViewLabel(text=label, no_selection=True), dirNodes[root]) # FIXME Faire du gris
+
 	def show_file(self, instance, value):
 		ps = PreviewScreen()
 		ps.path.text = 'Lecture de %s' % (value.path)
-		
+
 		self.content.clear_widgets()
 		self.content.add_widget(ps)
-	
+
 	def build(self):
 		root = BoxLayout(orientation='horizontal', padding=20, spacing=20)
 		self.content = content = BoxLayout()
 		root.add_widget(content)
 		sc = PolarKiosque()
-		sc.content.add_widget(root)
-		
+		sc.add_widget(root)
+
 
 		self.content.clear_widgets()
 		w = BoxLayout(spacing=10)
 		w.add_widget(Label(text="Attente clé"))
 
 		self.content.add_widget(w)
-		
+
 		Clock.schedule_interval(self.check_key, 1)
-				
+
 		return sc
 
 	def show_standard_buttons(self):
