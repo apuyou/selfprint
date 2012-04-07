@@ -19,23 +19,42 @@ from kivy.uix.widget import Widget
 
 import test_data_annales as data
 
-class ElementPanier(Widget):
-    pass
+class Messager():
+    def __init__(self, kwargs):
+        if (kwargs.has_key("message_handler")):
+            self.send = kwargs["message_handler"]
+        else:
+            print "No message handler passed"
 
-class Panier(StackLayout):
+class ElementPanier(StackLayout, Messager):
+    def __init__(self, *args, **kwargs):
+        StackLayout.__init__(self, kwargs)
+        Messager.__init__(self, kwargs)
+
+        if kwargs.has_key("uv"):
+            self.uv = kwargs["uv"]
+        else:
+            self.uv = "UV Inconnue"
+
+        if kwargs.has_key("nb_pages"):
+            self.nb_pages = kwargs["nb_pages"]
+        else:
+            self.nb_pages = 0
+
+class Panier(StackLayout, Messager):
     def add_commande(self, uv, nb_pages):
         print uv, nb_pages
 
     def get_commandes(self):
         pass
 
-class RechercheUV(StackLayout):
+class RechercheUV(StackLayout, Messager):
     nb_uvs = 0
     nb_uvs_affichees = 0
 
-    def __init__(self, message_handler, **kwargs):
+    def __init__(self, **kwargs):
         StackLayout.__init__(self)
-        self.message_handler = message_handler
+        Messager.__init__(self, kwargs)
 
         self.orientation = "lr-tb"
         self.spacing = 10
@@ -72,13 +91,12 @@ class RechercheUV(StackLayout):
                 self.nb_uvs_affichees += 1
 
     def show_details(self, instance, value):
-        self.message_handler("details", value.text[0:4])
+        self.send("details", value.text[0:4])
 
-class Details(Popup):
-    def __init__(self, message_handler, **kwargs):
+class Details(Popup, Messager):
+    def __init__(self, **kwargs):
         Popup.__init__(self)
-        self.message_handler = message_handler # faire une classe avec une méthode send
-        #qui fait ça toute seule
+        Messager.__init__(self, kwargs)
 
     def remplir(self, uv):
         self.title = u"Détail des annales de "+uv
@@ -101,7 +119,7 @@ class Details(Popup):
 
         def commander_pressed(a):
             self.dismiss()
-            self.message_handler("commander", uv)
+            self.send("commander", uv)
         commander.bind(on_release=commander_pressed)
 
         close = Button(text=u"Retour", background_color=[220/255.,12/255.,12/255.,1], font_size=25)
@@ -121,21 +139,26 @@ class Details(Popup):
             self.tree.add_node(TreeViewLabel(text=titre_sujet, size_hint_y=None, font_size=15, no_selection=True), p_node)
             print titre_sujet
 
+def find_nb_pages(liste, uv):
+    for i in liste:
+        if i[0] == uv:
+            return i[1]
+
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
         if (type_ == "details"):
-            details = Details(self.reception_message, attach_to=self.root)
+            details = Details(message_handler=self.reception_message, attach_to=self.root)
             details.remplir(valeur)
             details.open()
         elif (type_ == "commander"):
-            self.panier.add_commande(valeur, self.recherche.uvs[valeur])
+            self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
 
     def build(self):
         self.root = FloatLayout()
         bigbox = BoxLayout(orientation="horizontal", padding=20, spacing=20)
-        self.panier = Panier()
+        self.panier = Panier(message_handler=self.reception_message)
         bigbox.add_widget(self.panier)
-        self.recherche = RechercheUV(self.reception_message)
+        self.recherche = RechercheUV(message_handler=self.reception_message)
         self.recherche.remplir()
         bigbox.add_widget(self.recherche)
 
