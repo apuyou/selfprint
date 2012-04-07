@@ -24,7 +24,7 @@ class ElementPanier(Widget):
 
 class Panier(StackLayout):
     def add_commande(self, uv, nb_pages):
-        pass
+        print uv, nb_pages
 
     def get_commandes(self):
         pass
@@ -49,8 +49,6 @@ class RechercheUV(StackLayout):
         self.add_widget(txt_input)
 
         self.uvs = data.update_liste_uvs()
-        # trier par nom puisque json.loads à l'air de faire foirer ça
-
         self.fill_tree("") # pas de filtre, on affiche tout
 
     def reset(self):
@@ -68,9 +66,9 @@ class RechercheUV(StackLayout):
 
         self.nb_uvs_affichees = 0
 
-        for key in self.uvs:
-            if key.startswith(filtre.upper()) and self.uvs[key] != 0:
-                tree.add_node(TreeViewLabel(text=u"%s         (%s €)" % (key, self.uvs[key]*0.06), font_size=20, size_hint_y=None, padding=(20,20)))
+        for uv in self.uvs:
+            if uv[0].startswith(filtre.upper()) and uv[1] != 0:
+                tree.add_node(TreeViewLabel(text=u"%s         (%s €)" % (uv[0], uv[1]*0.06), font_size=20, size_hint_y=None, padding=(20,20)))
                 self.nb_uvs_affichees += 1
 
     def show_details(self, instance, value):
@@ -84,12 +82,19 @@ class Details(Popup):
 
     def remplir(self, uv):
         self.title = u"Détail des annales de "+uv
-        self.content = StackLayout(size_hint=(1, 1))
+        self.content = StackLayout(size_hint=(1, 1), spacing = 15, padding = 15)
         self.size_hint = (None, None)
         self.pos_hint = {"center_x":0.5, "center_y":0.5}
         self.size = (900, 700)
 
-        box = BoxLayout(orientation="horizontal", spacing = 15, padding = 15)
+        scroll = ScrollView(size_hint=(None,None), do_scroll_x=False, size=(850, 485))
+        self.content.add_widget(scroll)
+        self.tree = TreeView(hide_root=True, size_hint_y=None)
+        self.tree.bind(minimum_height=self.tree.setter('height'))
+        scroll.add_widget(self.tree)
+        self.fill_treeview(uv)
+
+        box = BoxLayout(orientation="horizontal", spacing = 15)
         self.content.add_widget(box)
         commander = Button(text=u"Ajouter à la commande", background_color=[0,181/255.,38/255.,1], font_size=25)
         box.add_widget(commander)
@@ -102,6 +107,19 @@ class Details(Popup):
         close = Button(text=u"Retour", background_color=[220/255.,12/255.,12/255.,1], font_size=25)
         box.add_widget(close)
         close.bind(on_release=self.dismiss)
+
+    def fill_treeview(self, uv):
+        liste = data.get_details(uv)
+        print liste
+
+        p_node = TreeViewLabel(text="")
+        for sujet in liste:
+            if (data.types[sujet[0]] != p_node.text):
+                p_node = TreeViewLabel(text=data.types[sujet[0]], font_size=20, is_open=True, no_selection=True)
+                self.tree.add_node(p_node)
+            titre_sujet = data.semestres[sujet[1]] + " " + str(2000+sujet[2]) + " " + ["", "+ Corrigé"][sujet[3]]
+            self.tree.add_node(TreeViewLabel(text=titre_sujet, size_hint_y=None, font_size=15, no_selection=True), p_node)
+            print titre_sujet
 
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
