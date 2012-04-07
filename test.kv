@@ -1,0 +1,81 @@
+#:kivy 1.2.0
+
+<Root>:
+	size_hint: (1, 1)
+	Label:
+		text: "Commande d'annales"
+		on_touch_up: self.collide_point(*args[1].pos) and root.title_touched()
+		font_size: 20
+		padding: (0, 0)
+		pos_hint: {"top":1}
+		size_hint: (1, 0.1)
+	BoxLayout:
+		pos_hint: {"top":0.9, "right":1}
+		size_hint: (1, 1)
+		orientation: "horizontal"
+		spacing: 10
+		padding: 10
+		StackLayout:
+			orientation: "lr-tb"
+			spacing: 10
+			Button:
+				text: "Valider la commande"
+				font_size: 20
+				background_color: [0,181/255.,38/255.,1]
+		StackLayout:
+			orientation: "lr-tb"
+			spacing: 10
+			ScrollView:
+				size_hint: (None, None)
+				size: (600, 650)
+				do_scroll_x: False
+			TextInput:
+				focus: True
+				font_size: 20
+				multiline: False
+				height: 40
+
+<Details>:
+	title: "Détail de l'uv"
+	pos_hint: {"center_x": 0.5, "center_y":0.5}
+	size: (900, 700)
+	size_hint: (None, None)
+	tree: tree_details
+
+	content: layout_details
+
+	StackLayout:
+		id:layout_details
+		size_hint: (1, 1)
+		spacing: 15
+		padding: 15
+
+		ScrollView:
+			size: (850, 485)
+			size_hint: (None, None)
+			do_scroll_x: False
+
+			TreeView:
+				id: tree_details
+
+		BoxLayout:
+			orientation: "horizontal"
+			spacing: 15
+			Button:
+				text: "Ajouter à la commande"
+				font_size: 25
+				background_color: [0,181/255.,38/255.,1]
+				on_release: root.commander_pressed()
+			Button:
+				text: "Retour"
+				font_size: 25
+				background_color: [220/255.,12/255.,12/255.,1]
+				on_release: root.dismiss()
+
+
+<TreeView>:
+	size_hint_y: None
+	hide_root: True
+
+<TreeViewLabel>:
+	size_hint_y: None

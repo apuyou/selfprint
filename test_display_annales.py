@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import kivy
-kivy.require('1.0.8')
+kivy.require("1.2.0")
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -97,13 +97,13 @@ class Details(Popup, Messager):
     def __init__(self, **kwargs):
         Popup.__init__(self)
         Messager.__init__(self, kwargs)
+        self.size_hint = (None, None)
+        self.pos_hint = {"center_x":0.5, "center_y":0.5}
+        self.size = (900, 700)
 
     def remplir(self, uv):
         self.title = u"Détail des annales de "+uv
         self.content = StackLayout(size_hint=(1, 1), spacing = 15, padding = 15)
-        self.size_hint = (None, None)
-        self.pos_hint = {"center_x":0.5, "center_y":0.5}
-        self.size = (900, 700)
 
         scroll = ScrollView(size_hint=(None,None), do_scroll_x=False, size=(850, 485))
         self.content.add_widget(scroll)
