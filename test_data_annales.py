@@ -13,18 +13,18 @@ def update_liste_uvs():
     return json.loads(conn.getresponse().read())
 
 def get_details(uv):
-    if uvs.has_key(uv):
-        conn = httplib.HTTPConnection("localhost")
-        conn.request("GET", "/polar-web/annales/comm_borne?details-annale="+uv)
-        return json.loads(conn.getresponse().read())
-    else:
-        return []
+    #if uvs.has_key(uv):
+    conn = httplib.HTTPConnection("localhost")
+    conn.request("GET", "/polar-web/annales/comm_borne?details-annale="+uv)
+    return json.loads(conn.getresponse().read())
+    #else:
+    #    return []
 
 if __name__ == "__main__":
     uvs = update_liste_uvs()
     print "Annales disponibles"
-    for key in uvs:
-        print key, " ("+str(uvs[key])+" pages)"
+    for uv in uvs:
+        print uv[0], " ("+str(uv[1])+" pages)"
 
     while 1:
         choix_uv = raw_input("\nAfficher les détails d'une annales : ")
