@@ -38,5 +38,5 @@ def envoyer_commande(login, liste_uvs):
 
     params_encoded = urllib.urlencode(params)
     headers = {"Content-type": "application/x-www-form-urlencoded"}
-    conn.request("POST", RACINE+"annales/comm_borne?commander", params_encoded, headers)
+    conn.request("POST", RACINE+"annales/borne?commander", params_encoded, headers)
     return conn.getresponse().read()
