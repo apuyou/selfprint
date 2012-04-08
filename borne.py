@@ -12,7 +12,7 @@ HOST = "localhost"
 #TODO : Vérification d'erreur
 
 def update_liste_uvs():
-    conn = httplib.HTTPConnection("localhost")
+    conn = httplib.HTTPConnection(HOST)
     conn.request("GET", RACINE+"annales/borne?liste-annales")
     print RACINE+"annales/comm_borne?liste-annales"
     return json.loads(conn.getresponse().read())
