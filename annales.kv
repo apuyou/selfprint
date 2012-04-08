@@ -4,15 +4,16 @@
 	orientation: "horizontal"
 	height: 50
 	Label:
-		text: "%s (%s euros)" % (root.uv, root.prix)
+		text: "%s (%s euros)" % (root.uv, root.prix*0.06)
 		size_hint: (0.7, 1)
 		halign: "left"
 		valign: "bottom"
 		font_size: 15
-#	Button:
-#		text: "Supprimer"
-#		background_color: [220/255.,12/255.,12/255.,1]
-#		size_hint: (0.3, 0.8)
+	Button:
+		text: "Supprimer"
+		background_color: [220/255.,12/255.,12/255.,1]
+		size_hint: (0.3, 0.8)
+		on_release: root.suppr_pressed()
 
 <Panier>:
 	spacing: 5
@@ -20,7 +21,7 @@
 		orientation: "horizontal"
 		height: 50
 		Label:
-			text: "Total : %s euros" % (root.prix)
+			text: "Total : %s euros" % (root.prix*0.06)
 			font_size: 20
 			size_hint: (0.7, 1)
 		Button:

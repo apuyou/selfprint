@@ -39,32 +39,51 @@ class ElementPanier(BoxLayout, Messager):
 
         if kwargs.has_key("uv"):
             self.uv = kwargs["uv"]
-            print "bonjour"
 
-        if kwargs.has_key("prix"):
-            self.prix = kwargs["prix"]
-            print "bonjour"
+        if kwargs.has_key("pages"):
+            self.prix = kwargs["pages"]
+
+    def suppr_pressed(self):
+        self.send(self)
 
 class Panier(StackLayout, Messager):
     commandes = []
     prix = Property(0)
 
+    def __init__(self, **kwargs):
+        StackLayout.__init__(self)
+        Messager.__init__(self, kwargs)
+
     def add_commande(self, uv, nb_pages):
         if (len(self.commandes)) < COMMANDES_MAX:
-            w = ElementPanier(uv=uv, prix=nb_pages*0.06)
+            w = ElementPanier(uv=uv, pages=nb_pages, message_handler=self.message_handler)
             self.add_widget(w)
             self.commandes.append(w)
-            self.prix += nb_pages*0.06
+            self.prix += nb_pages
 
     def get_commandes(self):
         toi = []
         for i in self.commandes:
-            toi.append(i.text[:4])
+            toi.append(i.uv)
 
         return toi
 
     def valider_commande(self):
-        self.send("valider_commande", "")
+        if len(self.commandes) > 0:
+            self.send("valider_commande", None)
+
+    def reset(self):
+        for i in self.commandes:
+            self.remove_widget(i)
+        self.commandes = []
+        self.prix = 0
+
+    def message_handler(self, widget):
+        print len(self.commandes)
+        self.prix -= widget.prix
+        self.remove_widget(widget)
+        self.commandes.remove(widget)
+        print len(self.commandes)
 
 class RechercheUV(StackLayout, Messager):
     nb_uvs = 0
@@ -163,6 +182,61 @@ def find_nb_pages(liste, uv):
         if i[0] == uv:
             return i[1]
 
+class Login(Popup, Messager):
+    correct_login = False
+
+    def __init__(self, **kwargs):
+        Popup.__init__(self)
+        Messager.__init__(self, kwargs)
+        self.size_hint = (None, None)
+        self.pos_hint = {"center_x":0.5, "center_y":0.5}
+        self.size = (900, 700)
+
+    def remplir(self):
+        self.title = u"Finalisation de la commande"
+        self.content = StackLayout(size_hint=(1, 1), spacing = 15, padding = 15)
+
+        txt_input = TextInput(multiline=False, focus=True, font_size=20, height=40)
+        txt_input.bind(text=self.on_text_change)
+        self.content.add_widget(txt_input)
+        self.login = txt_input
+
+        self.txt = Label(text="", font_size = 20)
+        self.content.add_widget(self.txt)
+
+        self.void = Label(text=" ", font_size=150) # s'pas joli ça!
+        self.content.add_widget(self.void)
+        void = Label(text=" ", font_size=150) # s'pas joli ça!
+        self.content.add_widget(void)
+        void = Label(text=" ", font_size=150) # s'pas joli ça!
+        self.content.add_widget(void)
+
+        box = BoxLayout(orientation="horizontal", spacing = 15)
+        self.content.add_widget(box)
+        commander = Button(text=u"Valider et Envoyer", background_color=[0,181/255.,38/255.,1], font_size=25)
+        box.add_widget(commander)
+        commander.bind(on_release=self.commander_pressed)
+        self.bouton_commander = commander
+        self.box = box
+
+        close = Button(text=u"Retour", background_color=[220/255.,12/255.,12/255.,1], font_size=25)
+        box.add_widget(close)
+        close.bind(on_release=self.dismiss)
+
+    def commander_pressed(self, a):
+        if self.login_correct:
+            self.send("envoyer", self.login.text)
+
+    def on_text_change(self, a, valeur):
+        if (len(valeur) > 5): #parceque y a des chinois qu'on des login super courts
+            #on envoie un message à comm_borne pour vérifer le login
+            if (data.get_login_valide(valeur)):
+                self.txt.text = "Login valide !"
+                self.login_correct = True
+            else:
+                self.txt.text = ""
+                self.login_correct = False
+
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
         if (type_ == "details"):
@@ -172,8 +246,17 @@ class AnnalesApp(App):
         elif (type_ == "commander"):
             self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
             self.recherche.reset()
-        elif (type == "valider_commande"):
-            pass
+        elif (type_ == "valider_commande"):
+            self.ask_login = Login(message_handler=self.reception_message, attach_to=self.root)
+            self.ask_login.remplir()
+            self.ask_login.open()
+        elif (type_ =="envoyer"):
+            num_commande = data.envoyer_commande(valeur, self.panier.get_commandes())
+            self.ask_login.txt.text = "Commande validée! Vous pouvez noter votre numéro de commande"
+            self.ask_login.void.text = num_commande
+            self.ask_login.box.remove_widget(self.ask_login.bouton_commander)
+            self.panier.reset()
+            self.recherche.reset()
 
     def build(self):
         self.root = FloatLayout()
