@@ -3,33 +3,31 @@
 import httplib, urllib
 import json
 
-uvs = {}
 types = {"p": "Partiel 1", "q": "Partiel 2", "m": "Médian", "f": "Final", "t": "Test 1", "u": "Test 2", "v": "Test 2"}
 semestres = {"A":"Automne", "P":"Printemps"}
 
 RACINE = "/polar-web/"
+HOST = "localhost"
+
+#TODO : Vérification d'erreur
 
 def update_liste_uvs():
-    conn = httplib.HTTPConnection("localhost")
+    conn = httplib.HTTPConnection(HOST)
     conn.request("GET", RACINE+"annales/comm_borne?liste-annales")
     return json.loads(conn.getresponse().read())
 
 def get_details(uv):
-    #if uvs.has_key(uv):
-    conn = httplib.HTTPConnection("localhost")
+    conn = httplib.HTTPConnection(HOST)
     conn.request("GET", RACINE+"annales/comm_borne?details-annale="+uv)
     return json.loads(conn.getresponse().read())
-    #else:
-    #    return []
 
 def get_login_valide(login):
-    conn = httplib.HTTPConnection("localhost")
+    conn = httplib.HTTPConnection(HOST)
     conn.request("GET", RACINE+"annales/comm_borne?verif-login="+login)
     return conn.getresponse().read() == "OUI" #on pourrait le faire avec du json aussi
 
 def envoyer_commande(login, liste_uvs):
-    print login, liste_uvs
-    conn = httplib.HTTPConnection("localhost")
+    conn = httplib.HTTPConnection(HOST)
     params = {'login': login}
 
     i = 0
