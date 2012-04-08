@@ -1,0 +1,42 @@
+
+
+<ElementPanier>:
+	orientation: "horizontal"
+	height: 50
+	Label:
+		text: "%s (%s euros)" % (root.uv, root.prix)
+		size_hint: (0.7, 1)
+		halign: "left"
+		valign: "bottom"
+		font_size: 15
+#	Button:
+#		text: "Supprimer"
+#		background_color: [220/255.,12/255.,12/255.,1]
+#		size_hint: (0.3, 0.8)
+
+<Panier>:
+	spacing: 5
+	BoxLayout:
+		orientation: "horizontal"
+		height: 50
+		Label:
+			text: "Total : %s euros" % (root.prix)
+			font_size: 20
+			size_hint: (0.7, 1)
+		Button:
+			text: "Valider la commande"
+			font_size: 20
+			size: (0.3, 1)
+			background_color: [0,181/255.,38/255.,1]
+			on_release: root.valider_commande()
+
+<LoginPopup>:
+	pos_hint: {"center_x": 0.5, "center_y":0.5}
+	size: (500, 400)
+	title: "Validation de la commande"
+
+	Button:
+		text: "Valider la commande"
+		font_size: 20
+		background_color: [0,181/255.,38/255.,1]
+		on_release: root.envoyer_commande()

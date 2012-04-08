@@ -16,8 +16,11 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
+from kivy.properties import Property
 
 import test_data_annales as data
+
+COMMANDES_MAX = 8
 
 class Messager():
     def __init__(self, kwargs):
@@ -26,27 +29,42 @@ class Messager():
         else:
             print "No message handler passed"
 
-class ElementPanier(StackLayout, Messager):
+class ElementPanier(BoxLayout, Messager):
+    uv = Property("UV inconnue")
+    prix = Property(0)
+
     def __init__(self, *args, **kwargs):
-        StackLayout.__init__(self, kwargs)
+        BoxLayout.__init__(self)
         Messager.__init__(self, kwargs)
 
         if kwargs.has_key("uv"):
             self.uv = kwargs["uv"]
-        else:
-            self.uv = "UV Inconnue"
+            print "bonjour"
 
-        if kwargs.has_key("nb_pages"):
-            self.nb_pages = kwargs["nb_pages"]
-        else:
-            self.nb_pages = 0
+        if kwargs.has_key("prix"):
+            self.prix = kwargs["prix"]
+            print "bonjour"
 
 class Panier(StackLayout, Messager):
+    commandes = []
+    prix = Property(0)
+
     def add_commande(self, uv, nb_pages):
-        print uv, nb_pages
+        if (len(self.commandes)) < COMMANDES_MAX:
+            w = ElementPanier(uv=uv, prix=nb_pages*0.06)
+            self.add_widget(w)
+            self.commandes.append(w)
+            self.prix += nb_pages*0.06
 
     def get_commandes(self):
-        pass
+        toi = []
+        for i in self.commandes:
+            toi.append(i.text[:4])
+
+        return toi
+
+    def valider_commande(self):
+        self.send("valider_commande", "")
 
 class RechercheUV(StackLayout, Messager):
     nb_uvs = 0
@@ -67,11 +85,12 @@ class RechercheUV(StackLayout, Messager):
         txt_input.bind(text=self.on_text_change)
         self.add_widget(txt_input)
 
+        self.txt_input = txt_input
         self.uvs = data.update_liste_uvs()
         self.fill_tree("") # pas de filtre, on affiche tout
 
     def reset(self):
-        pass
+        self.txt_input.text = ""
 
     def on_text_change(self, widget, value):
         self.fill_tree(value)
@@ -152,6 +171,9 @@ class AnnalesApp(App):
             details.open()
         elif (type_ == "commander"):
             self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
+            self.recherche.reset()
+        elif (type == "valider_commande"):
+            pass
 
     def build(self):
         self.root = FloatLayout()
