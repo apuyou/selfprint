@@ -18,7 +18,7 @@ from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 from kivy.properties import Property
 
-import test_data_annales as data
+import borne as data
 
 COMMANDES_MAX = 8
 
