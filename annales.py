@@ -22,23 +22,17 @@ import borne as data
 
 COMMANDES_MAX = 8
 
-class Messager():
-    def __init__(self, kwargs):
-        if (kwargs.has_key("message_handler")):
-            self.send = kwargs["message_handler"]
-        else:
-            print "No message handler passed"
-
 # ===================================
 # Côté gauche de l'UI : Panier et validation de la commande
 
-class ElementPanier(BoxLayout, Messager):
+class ElementPanier(BoxLayout):
     uv = Property("UV inconnue")
     prix = Property(0)
 
-    def __init__(self, *args, **kwargs):
-        BoxLayout.__init__(self)
-        Messager.__init__(self, kwargs)
+    def __init__(self, **kwargs):
+        super(ElementPanier, self).__init__(**kwargs)
+
+        self.register_event_type("on_remove")
 
         if kwargs.has_key("uv"):
             self.uv = kwargs["uv"]
@@ -47,19 +41,24 @@ class ElementPanier(BoxLayout, Messager):
             self.prix = kwargs["pages"]
 
     def suppr_pressed(self):
-        self.send(self)
+        self.dispatch("on_remove")
 
-class Panier(StackLayout, Messager):
+    def on_remove(self):
+        pass
+
+class Panier(StackLayout):
     commandes = []
     prix = Property(0)
 
     def __init__(self, **kwargs):
-        StackLayout.__init__(self)
-        Messager.__init__(self, kwargs)
+        super(Panier, self).__init__(**kwargs)
+
+        self.register_event_type("on_valider_commande")
 
     def add_commande(self, uv, nb_pages):
         if (len(self.commandes)) < COMMANDES_MAX:
-            w = ElementPanier(uv=uv, pages=nb_pages, message_handler=self.message_handler)
+            w = ElementPanier(uv=uv, pages=nb_pages)
+            w.bind(on_remove=self.remove_commande)
             self.add_widget(w)
             self.commandes.append(w)
             self.prix += nb_pages
@@ -73,7 +72,7 @@ class Panier(StackLayout, Messager):
 
     def valider_commande(self):
         if len(self.commandes) > 0:
-            self.send("valider_commande", None)
+            self.dispatch("on_valider_commande")
 
     def reset(self):
         for i in self.commandes:
@@ -81,23 +80,27 @@ class Panier(StackLayout, Messager):
         self.commandes = []
         self.prix = 0
 
-    def message_handler(self, widget):
+    def remove_commande(self, widget):
         print len(self.commandes)
         self.prix -= widget.prix
         self.remove_widget(widget)
         self.commandes.remove(widget)
         print len(self.commandes)
 
+    def on_valider_commande(self):
+        pass
+
 # ===================================
 # Côté droit de l'UI: recherche d'UV
 
-class RechercheUV(StackLayout, Messager):
+class RechercheUV(StackLayout):
     nb_uvs = 0
     nb_uvs_affichees = 0
 
     def __init__(self, **kwargs):
-        StackLayout.__init__(self)
-        Messager.__init__(self, kwargs)
+        super(RechercheUV, self).__init__(**kwargs)
+
+        self.register_event_type("on_row_selected")
 
         self.uvs = data.update_liste_uvs()
 
@@ -126,7 +129,10 @@ class RechercheUV(StackLayout, Messager):
                 self.nb_uvs_affichees += 1
 
     def show_details(self, instance, value):
-        self.send("details", value.text[0:4])
+        self.dispatch("on_row_selected", value.text[0:4])
+
+    def on_row_selected(self, uv):
+        pass
 
 # ===================================
 # Popup pour afficher le détail d'une UV et ajouter au panier
@@ -141,7 +147,7 @@ class DetailsContent(StackLayout):
 
     def commander_pressed(self):
         self.parent_.dismiss()
-        self.parent_.send("commander", self.uv)
+        self.parent_.dispatch("on_commander", self.uv)
 
     def fill_treeview(self, uv):
         self.uv = uv
@@ -164,10 +170,11 @@ class DetailsContent(StackLayout):
                                              no_selection=True),
                                p_node)
 
-class Details(Popup, Messager):
+class Details(Popup):
     def __init__(self, **kwargs):
-        Popup.__init__(self)
-        Messager.__init__(self, kwargs)
+        super(Details, self).__init__(**kwargs)
+
+        self.register_event_type("on_commander")
 
         self.content = DetailsContent(papa_popup=self)
 
@@ -175,6 +182,9 @@ class Details(Popup, Messager):
         self.title = u"Détail des annales de "+uv
 
         self.content.fill_treeview(uv)
+
+    def on_commander(self, uv):
+        pass
 
 # ===================================
 # Popup pour entrer le login et valider la commande
@@ -197,7 +207,7 @@ class LoginContent(StackLayout):
 
     def commander_pressed(self):
         if self.login_correct:
-            self.parent_.send("envoyer", (self.parent_, self.login.text))
+            self.parent_.dispatch("on_envoyer", self.login.text)
 
     def on_text_change(self):
         valeur = self.login.text
@@ -210,11 +220,12 @@ class LoginContent(StackLayout):
                 self.txt.text = ""
                 self.login_correct = False
 
-class LoginPopup(Popup, Messager):
+class LoginPopup(Popup):
 
     def __init__(self, **kwargs):
-        Popup.__init__(self)
-        Messager.__init__(self, kwargs)
+        super(LoginPopup, self).__init__(**kwargs)
+
+        self.register_event_type("on_envoyer")
 
 	self.title = "Validation de la commande"
 
@@ -223,6 +234,9 @@ class LoginPopup(Popup, Messager):
     def commande_ok(self, nb_commande):
         self.content.commande_ok(nb_commande)
         Clock.schedule_once(self.dismiss, 15)
+
+    def on_envoyer(self, login):
+        pass
 
 # ===================================
 # Application
@@ -233,21 +247,27 @@ def find_nb_pages(liste, uv):
             return i[1]
 
 class AnnalesApp(App):
-    def reception_message(self, type_, valeur):
-        if (type_ == "details"):
-            details = Details(uv=valeur, message_handler=self.reception_message, attach_to=self.root)
-            details.open()
-        elif (type_ == "commander"):
-            self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
-            self.recherche.reset()
-        elif (type_ == "valider_commande"):
-            ask_login = LoginPopup(message_handler=self.reception_message, attach_to=self.root)
-            ask_login.open()
-        elif (type_ =="envoyer"):
-            num_commande = data.envoyer_commande(valeur[1], self.panier.get_commandes())
-            valeur[0].commande_ok(num_commande)
-            self.panier.reset()
-            self.recherche.reset()
+
+    def on_row_selected(self, widget, uv):
+        details = Details(uv=uv, attach_to=self.root)
+        details.bind(on_commander=self.add_commande)
+        details.open()
+
+    def add_commande(self, widget, uv):
+        self.panier.add_commande(uv, find_nb_pages(self.recherche.uvs,
+                                                   uv))
+        self.recherche.reset()
+
+    def valider_commande(self, widget):
+        ask_login = LoginPopup(attach_to=self.root)
+        ask_login.bind(on_envoyer=self.envoyer)
+        ask_login.open()
+
+    def envoyer(self, widget, login):
+        num_commande = data.envoyer_commande(login, self.panier.get_commandes())
+        widget.commande_ok(num_commande)
+        self.panier.reset()
+        self.recherche.reset()
 
     def build(self):
         self.root = FloatLayout()
@@ -255,10 +275,12 @@ class AnnalesApp(App):
         bigbox = BoxLayout(orientation="horizontal", padding=20, spacing=20)
         self.root.add_widget(bigbox)
 
-        self.panier = Panier(message_handler=self.reception_message)
+        self.panier = Panier()
+        self.panier.bind(on_valider_commande=self.valider_commande)
         bigbox.add_widget(self.panier)
 
-        self.recherche = RechercheUV(message_handler=self.reception_message)
+        self.recherche = RechercheUV()
+        self.recherche.bind(on_row_selected=self.on_row_selected)
         bigbox.add_widget(self.recherche)
 
         #Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
