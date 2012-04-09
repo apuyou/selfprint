@@ -182,53 +182,29 @@ def find_nb_pages(liste, uv):
         if i[0] == uv:
             return i[1]
 
-class Login(Popup, Messager):
+class LoginContent(StackLayout):
+    """On ne peut pas modifier un popup directement
+    depuis les fichiers kv donc faut modifier le contenu"""
+
     correct_login = False
+    nb_commande = Property("")
 
     def __init__(self, **kwargs):
-        Popup.__init__(self)
-        Messager.__init__(self, kwargs)
-        self.size_hint = (None, None)
-        self.pos_hint = {"center_x":0.5, "center_y":0.5}
-        self.size = (900, 700)
+        StackLayout.__init__(self)
+        self.parent_ = kwargs["papa_popup"]
 
-    def remplir(self):
-        self.title = u"Finalisation de la commande"
-        self.content = StackLayout(size_hint=(1, 1), spacing = 15, padding = 15)
+    def commande_ok(self, nb_commande):
+        self.nb_commande = nb_commande
+        self.txt.text = "Commande validée! Vous pouvez noter votre numéro de commande"
+        self.buttonsbox.remove_widget(self.bouton_commander)
 
-        txt_input = TextInput(multiline=False, focus=True, font_size=20, height=40)
-        txt_input.bind(text=self.on_text_change)
-        self.content.add_widget(txt_input)
-        self.login = txt_input
-
-        self.txt = Label(text="", font_size = 20)
-        self.content.add_widget(self.txt)
-
-        self.void = Label(text=" ", font_size=150) # s'pas joli ça!
-        self.content.add_widget(self.void)
-        void = Label(text=" ", font_size=150) # s'pas joli ça!
-        self.content.add_widget(void)
-        void = Label(text=" ", font_size=150) # s'pas joli ça!
-        self.content.add_widget(void)
-
-        box = BoxLayout(orientation="horizontal", spacing = 15)
-        self.content.add_widget(box)
-        commander = Button(text=u"Valider et Envoyer", background_color=[0,181/255.,38/255.,1], font_size=25)
-        box.add_widget(commander)
-        commander.bind(on_release=self.commander_pressed)
-        self.bouton_commander = commander
-        self.box = box
-
-        close = Button(text=u"Retour", background_color=[220/255.,12/255.,12/255.,1], font_size=25)
-        box.add_widget(close)
-        close.bind(on_release=self.dismiss)
-
-    def commander_pressed(self, a):
+    def commander_pressed(self):
         if self.login_correct:
-            self.send("envoyer", self.login.text)
+            self.parent_.send("envoyer", (self.parent_, self.login.text))
 
-    def on_text_change(self, a, valeur):
-        if (len(valeur) > 5): #parceque y a des chinois qu'on des login super courts
+    def on_text_change(self):
+        valeur = self.login.text
+        if (len(valeur) > 5): #parceque y a des chinois qu'ont des login super courts
             #on envoie un message à comm_borne pour vérifer le login
             if (data.get_login_valide(valeur)):
                 self.txt.text = "Login valide !"
@@ -236,6 +212,23 @@ class Login(Popup, Messager):
             else:
                 self.txt.text = ""
                 self.login_correct = False
+
+class LoginPopup(Popup, Messager):
+
+    def __init__(self, **kwargs):
+        Popup.__init__(self)
+        Messager.__init__(self, kwargs)
+
+	self.pos_hint = {"center_x": 0.5, "center_y":0.5}
+	self.size = (900, 700)
+	self.size_hint = (None, None)
+	self.title = "Validation de la commande"
+
+        self.content = LoginContent(papa_popup=self)
+
+    def commande_ok(self, nb_commande):
+        self.content.commande_ok(nb_commande)
+        Clock.schedule_once(self.dismiss, 15)
 
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
@@ -247,14 +240,11 @@ class AnnalesApp(App):
             self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
             self.recherche.reset()
         elif (type_ == "valider_commande"):
-            self.ask_login = Login(message_handler=self.reception_message, attach_to=self.root)
-            self.ask_login.remplir()
-            self.ask_login.open()
+            ask_login = LoginPopup(message_handler=self.reception_message, attach_to=self.root)
+            ask_login.open()
         elif (type_ =="envoyer"):
-            num_commande = data.envoyer_commande(valeur, self.panier.get_commandes())
-            self.ask_login.txt.text = "Commande validée! Vous pouvez noter votre numéro de commande"
-            self.ask_login.void.text = num_commande
-            self.ask_login.box.remove_widget(self.ask_login.bouton_commander)
+            num_commande = data.envoyer_commande(valeur[1], self.panier.get_commandes())
+            valeur[0].commande_ok(num_commande)
             self.panier.reset()
             self.recherche.reset()
 

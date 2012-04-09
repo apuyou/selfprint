@@ -31,13 +31,58 @@
 			background_color: [0,181/255.,38/255.,1]
 			on_release: root.valider_commande()
 
-<LoginPopup>:
-	pos_hint: {"center_x": 0.5, "center_y":0.5}
-	size: (500, 400)
-	title: "Validation de la commande"
+<LoginContent>:
+	login: login_
+	buttonsbox: buttonsbox_
+	bouton_commander: bouton_commander_
+	txt: txt_
 
-	Button:
-		text: "Valider la commande"
-		font_size: 20
-		background_color: [0,181/255.,38/255.,1]
-		on_release: root.envoyer_commande()
+	StackLayout:
+		id: content_
+		size_hint: 1, 1
+		spacing: 15
+		padding: 15
+
+		BoxLayout:
+			height: 40
+			orientation: "horizontal"
+
+			Label:
+				text: "Login UTC"
+				font_size: 15
+				size_hint: 0.2, 1
+
+			TextInput:
+				multiline: False
+				focus: True
+				font_size: 20
+				size_hint: 0.8, 1
+				id: login_
+				on_text: root.on_text_change()
+
+		Label:
+			font_size: 20
+			id: txt_
+
+		Label:
+			text: "%s" % (root.nb_commande)
+			font_size: 150
+			height: 330
+
+		BoxLayout:
+			orientation: "horizontal"
+			spacing: 15
+			id: buttonsbox_
+
+			Button:
+				text: "Valider la commande"
+				font_size: 25
+				background_color: [0,181/255.,38/255.,1]
+				on_release: root.commander_pressed()
+				id: bouton_commander_
+
+			Button:
+				text: "Retour"
+				font_size: 25
+				background_color: [220/255.,12/255.,12/255.,1]
+				on_release: root.dismiss()
