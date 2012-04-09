@@ -126,3 +126,23 @@
 	size_hint: None, None
 	pos_hint: {"center_x": 0.5, "center_y": 0.5}
 	size: 900, 700
+
+<RechercheUV>:
+	spacing: 10
+	orientation: "lr-tb"
+	scroll: scrollview_
+	txt_input: txt_input_
+
+	ScrollView:
+		size_hint: None, None,
+		size: 600, 650
+		do_scroll_x: False
+		id:scrollview_
+
+	TextInput:
+		multiline: False
+		focus: True
+		font_size: 20
+		height: 40
+		on_text: root.on_text_change(self.text)
+		id: txt_input_

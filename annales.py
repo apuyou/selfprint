@@ -99,39 +99,30 @@ class RechercheUV(StackLayout, Messager):
         StackLayout.__init__(self)
         Messager.__init__(self, kwargs)
 
-        self.orientation = "lr-tb"
-        self.spacing = 10
-
-    def remplir(self):
-        self.scroll = ScrollView(size_hint=(None, None), size=(600, 650), do_scroll_x=False)
-        self.add_widget(self.scroll)
-
-        txt_input = TextInput(multiline=False, focus=True, font_size=20, height=40)
-        txt_input.bind(text=self.on_text_change)
-        self.add_widget(txt_input)
-
-        self.txt_input = txt_input
         self.uvs = data.update_liste_uvs()
-        self.fill_tree("") # pas de filtre, on affiche tout
 
     def reset(self):
         self.txt_input.text = ""
 
-    def on_text_change(self, widget, value):
-        self.fill_tree(value)
+    def on_text_change(self, valeur):
+        self.fill_tree(valeur)
 
     def fill_tree(self, filtre):
         self.scroll.clear_widgets()
 
         tree = TreeView(hide_root=True, size_hint_y=None)
-        tree.bind(minimum_height=tree.setter('height'), selected_node=self.show_details)
+        tree.bind(minimum_height=tree.setter('height'),
+                  selected_node=self.show_details)
         self.scroll.add_widget(tree)
 
         self.nb_uvs_affichees = 0
 
         for uv in self.uvs:
             if uv[0].startswith(filtre.upper()) and uv[1] != 0:
-                tree.add_node(TreeViewLabel(text=u"%s         (%s €)" % (uv[0], uv[1]*0.06), font_size=20, size_hint_y=None, padding=(20,20)))
+                tree.add_node(TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
+                                                                   uv[1]*0.06),
+                                            font_size=20, size_hint_y=None,
+                                            padding=(20,20)))
                 self.nb_uvs_affichees += 1
 
     def show_details(self, instance, value):
@@ -268,7 +259,6 @@ class AnnalesApp(App):
         bigbox.add_widget(self.panier)
 
         self.recherche = RechercheUV(message_handler=self.reception_message)
-        self.recherche.remplir()
         bigbox.add_widget(self.recherche)
 
         #Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
