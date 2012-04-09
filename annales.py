@@ -29,6 +29,9 @@ class Messager():
         else:
             print "No message handler passed"
 
+# ===================================
+# Côté gauche de l'UI : Panier et validation de la commande
+
 class ElementPanier(BoxLayout, Messager):
     uv = Property("UV inconnue")
     prix = Property(0)
@@ -85,6 +88,9 @@ class Panier(StackLayout, Messager):
         self.commandes.remove(widget)
         print len(self.commandes)
 
+# ===================================
+# Côté droit de l'UI: recherche d'UV
+
 class RechercheUV(StackLayout, Messager):
     nb_uvs = 0
     nb_uvs_affichees = 0
@@ -131,6 +137,9 @@ class RechercheUV(StackLayout, Messager):
     def show_details(self, instance, value):
         self.send("details", value.text[0:4])
 
+# ===================================
+# Popup pour afficher le détail d'une UV et ajouter au panier
+
 class DetailsContent(StackLayout):
 
     def __init__(self, **kwargs):
@@ -176,10 +185,8 @@ class Details(Popup, Messager):
 
         self.content.fill_treeview(uv)
 
-def find_nb_pages(liste, uv):
-    for i in liste:
-        if i[0] == uv:
-            return i[1]
+# ===================================
+# Popup pour entrer le login et valider la commande
 
 class LoginContent(StackLayout):
     """On ne peut pas modifier un popup directement
@@ -225,6 +232,14 @@ class LoginPopup(Popup, Messager):
     def commande_ok(self, nb_commande):
         self.content.commande_ok(nb_commande)
         Clock.schedule_once(self.dismiss, 15)
+
+# ===================================
+# Application
+
+def find_nb_pages(liste, uv):
+    for i in liste:
+        if i[0] == uv:
+            return i[1]
 
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
