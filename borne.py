@@ -11,21 +11,29 @@ HOST = "localhost"
 
 #TODO : Vérification d'erreur
 
-def update_liste_uvs():
+def get_something(args):
     conn = httplib.HTTPConnection(HOST)
-    conn.request("GET", RACINE+"annales/borne?liste-annales")
-    print RACINE+"annales/comm_borne?liste-annales"
-    return json.loads(conn.getresponse().read())
+    conn.request("GET", RACINE+"annales/borne?"+args)
+    print RACINE+"annales/bornes?"+args
+
+    try:
+        resultat = conn.getresponse().read()
+        return json.loads(resultat)
+    except (ValueError):
+        print "ERREUR : impossible de décoder l'objet json renvoyé"
+        return [] # ça évalue à false donc ça passe même pour get_login_valide()
+
+    # si il y pas de réseau ça plante monstrueusement
+    # mais il a pas l'air de renvoyer une exception rattrapable
+
+def update_liste_uvs():
+    return get_something("liste-annales")
 
 def get_details(uv):
-    conn = httplib.HTTPConnection(HOST)
-    conn.request("GET", RACINE+"annales/borne?details-annale="+uv)
-    return json.loads(conn.getresponse().read())
+    return get_something("details-annale="+uv)
 
 def get_login_valide(login):
-    conn = httplib.HTTPConnection(HOST)
-    conn.request("GET", RACINE+"annales/borne?verif-login="+login)
-    return conn.getresponse().read() == "OUI" #on pourrait le faire avec du json aussi
+    return get_something("verif-login="+login)
 
 def envoyer_commande(login, liste_uvs):
     conn = httplib.HTTPConnection(HOST)
