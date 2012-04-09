@@ -131,51 +131,50 @@ class RechercheUV(StackLayout, Messager):
     def show_details(self, instance, value):
         self.send("details", value.text[0:4])
 
+class DetailsContent(StackLayout):
+
+    def __init__(self, **kwargs):
+        StackLayout.__init__(self)
+        self.parent_ = kwargs["papa_popup"]
+
+        self.tree.bind(minimum_height=self.tree.setter('height'))
+
+    def commander_pressed(self):
+        self.parent_.dismiss()
+        self.parent_.send("commander", self.uv)
+
+    def fill_treeview(self, uv):
+        self.uv = uv
+
+        liste = data.get_details(uv)
+
+        p_node = TreeViewLabel(text="")
+        for sujet in liste:
+            if (data.types[sujet[0]] != p_node.text): # On crée un nouveau noeud quand on change de type de sujet
+                p_node = TreeViewLabel(text=data.types[sujet[0]],
+                                       font_size=20, is_open=True,
+                                       no_selection=True)
+                self.tree.add_node(p_node)
+
+            titre_sujet = data.semestres[sujet[1]] + " \
+" +str(2000+sujet[2]) + " " + ["", "+ Corrigé"][sujet[3]]
+            self.tree.add_node(TreeViewLabel(text=titre_sujet,
+                                             size_hint_y=None,
+                                             font_size=15,
+                                             no_selection=True),
+                               p_node)
+
 class Details(Popup, Messager):
     def __init__(self, **kwargs):
         Popup.__init__(self)
         Messager.__init__(self, kwargs)
-        self.size_hint = (None, None)
-        self.pos_hint = {"center_x":0.5, "center_y":0.5}
-        self.size = (900, 700)
 
-    def remplir(self, uv):
+        self.content = DetailsContent(papa_popup=self)
+
+        uv = kwargs["uv"]
         self.title = u"Détail des annales de "+uv
-        self.content = StackLayout(size_hint=(1, 1), spacing = 15, padding = 15)
 
-        scroll = ScrollView(size_hint=(None,None), do_scroll_x=False, size=(850, 485))
-        self.content.add_widget(scroll)
-        self.tree = TreeView(hide_root=True, size_hint_y=None)
-        self.tree.bind(minimum_height=self.tree.setter('height'))
-        scroll.add_widget(self.tree)
-        self.fill_treeview(uv)
-
-        box = BoxLayout(orientation="horizontal", spacing = 15)
-        self.content.add_widget(box)
-        commander = Button(text=u"Ajouter à la commande", background_color=[0,181/255.,38/255.,1], font_size=25)
-        box.add_widget(commander)
-
-        def commander_pressed(a):
-            self.dismiss()
-            self.send("commander", uv)
-        commander.bind(on_release=commander_pressed)
-
-        close = Button(text=u"Retour", background_color=[220/255.,12/255.,12/255.,1], font_size=25)
-        box.add_widget(close)
-        close.bind(on_release=self.dismiss)
-
-    def fill_treeview(self, uv):
-        liste = data.get_details(uv)
-        print liste
-
-        p_node = TreeViewLabel(text="")
-        for sujet in liste:
-            if (data.types[sujet[0]] != p_node.text):
-                p_node = TreeViewLabel(text=data.types[sujet[0]], font_size=20, is_open=True, no_selection=True)
-                self.tree.add_node(p_node)
-            titre_sujet = data.semestres[sujet[1]] + " " + str(2000+sujet[2]) + " " + ["", "+ Corrigé"][sujet[3]]
-            self.tree.add_node(TreeViewLabel(text=titre_sujet, size_hint_y=None, font_size=15, no_selection=True), p_node)
-            print titre_sujet
+        self.content.fill_treeview(uv)
 
 def find_nb_pages(liste, uv):
     for i in liste:
@@ -219,9 +218,6 @@ class LoginPopup(Popup, Messager):
         Popup.__init__(self)
         Messager.__init__(self, kwargs)
 
-	self.pos_hint = {"center_x": 0.5, "center_y":0.5}
-	self.size = (900, 700)
-	self.size_hint = (None, None)
 	self.title = "Validation de la commande"
 
         self.content = LoginContent(papa_popup=self)
@@ -233,8 +229,7 @@ class LoginPopup(Popup, Messager):
 class AnnalesApp(App):
     def reception_message(self, type_, valeur):
         if (type_ == "details"):
-            details = Details(message_handler=self.reception_message, attach_to=self.root)
-            details.remplir(valeur)
+            details = Details(uv=valeur, message_handler=self.reception_message, attach_to=self.root)
             details.open()
         elif (type_ == "commander"):
             self.panier.add_commande(valeur, find_nb_pages(self.recherche.uvs, valeur))
@@ -250,14 +245,16 @@ class AnnalesApp(App):
 
     def build(self):
         self.root = FloatLayout()
+
         bigbox = BoxLayout(orientation="horizontal", padding=20, spacing=20)
+        self.root.add_widget(bigbox)
+
         self.panier = Panier(message_handler=self.reception_message)
         bigbox.add_widget(self.panier)
+
         self.recherche = RechercheUV(message_handler=self.reception_message)
         self.recherche.remplir()
         bigbox.add_widget(self.recherche)
-
-        self.root.add_widget(bigbox)
 
         #Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
         return self.root

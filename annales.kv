@@ -85,4 +85,44 @@
 				text: "Retour"
 				font_size: 25
 				background_color: [220/255.,12/255.,12/255.,1]
-				on_release: root.dismiss()
+				on_release: root.parent_.dismiss()
+
+<DetailsContent>:
+	tree: tree_
+
+	StackLayout:
+		id: content_
+		size_hint: 1, 1
+		spacing: 15
+		padding: 15
+
+		ScrollView:
+			size_hint: None, None
+			do_scroll_x: False
+			size: 850, 485
+
+			TreeView:
+				id: tree_
+				size_hint_y: None
+				hide_root: True
+
+		BoxLayout:
+			orientation: "horizontal"
+			spacing: 15
+
+			Button:
+				text: "Valider la commande"
+				font_size: 25
+				background_color: [0,181/255.,38/255.,1]
+				on_release: root.commander_pressed()
+
+			Button:
+				text: "Retour"
+				font_size: 25
+				background_color: [220/255.,12/255.,12/255.,1]
+				on_release: root.parent_.dismiss()
+
+<Popup>:
+	size_hint: None, None
+	pos_hint: {"center_x": 0.5, "center_y": 0.5}
+	size: 900, 700
