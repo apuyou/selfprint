@@ -113,7 +113,7 @@ class RechercheUV(StackLayout):
     def fill_tree(self, filtre):
         self.scroll.clear_widgets()
 
-        tree = TreeView(hide_root=True, size_hint_y=None)
+        tree = TreeView(hide_root=True, size_hint_y=None, size_hint_x = 0.6)
         tree.bind(minimum_height=tree.setter('height'),
                   selected_node=self.show_details)
         self.scroll.add_widget(tree)
@@ -124,7 +124,7 @@ class RechercheUV(StackLayout):
             if uv[0].startswith(filtre.upper()) and uv[1] != 0:
                 tree.add_node(TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
                                                                    uv[1]*0.06),
-                                            font_size=20, size_hint_y=None,
+                                            font_size=30, size_hint_y=None,
                                             padding=(20,20)))
                 self.nb_uvs_affichees += 1
 
@@ -283,8 +283,10 @@ class AnnalesApp(App):
         self.recherche.bind(on_row_selected=self.on_row_selected)
         bigbox.add_widget(self.recherche)
 
-        #Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
+        Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
         return self.root
 
 if __name__ == "__main__":
+    Config.set('graphics', 'fullscreen', 'auto')
+    Config.write()
     AnnalesApp().run()
