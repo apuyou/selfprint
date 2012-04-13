@@ -17,6 +17,12 @@
 
 <Panier>:
 	spacing: 5
+
+	Label:
+		text: "Panier"
+		height: 40
+		font_size: 25
+
 	BoxLayout:
 		orientation: "horizontal"
 		height: 50
@@ -97,6 +103,7 @@
 		padding: 15
 
 		ScrollView:
+
 			size_hint: None, None
 			do_scroll_x: False
 			size: 850, 485
@@ -133,9 +140,14 @@
 	scroll: scrollview_
 	txt_input: txt_input_
 
+	Label:
+		text: "UVs disponibles"
+		height: 40
+		font_size: 25
+
 	ScrollView:
-		size_hint: None, None,
-		size: 650, 690
+		size_hint: None, None
+		size: 650, 630
 		do_scroll_x: False
 		bar_width: 10
 		bar_margin: 0

@@ -275,13 +275,13 @@ class AnnalesApp(App):
         bigbox = BoxLayout(orientation="horizontal", padding=20, spacing=20)
         self.root.add_widget(bigbox)
 
-        self.panier = Panier()
-        self.panier.bind(on_valider_commande=self.valider_commande)
-        bigbox.add_widget(self.panier)
-
         self.recherche = RechercheUV()
         self.recherche.bind(on_row_selected=self.on_row_selected)
         bigbox.add_widget(self.recherche)
+
+        self.panier = Panier()
+        self.panier.bind(on_valider_commande=self.valider_commande)
+        bigbox.add_widget(self.panier)
 
         Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
         return self.root
