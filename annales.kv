@@ -1,162 +1,162 @@
 
 
 <ElementPanier>:
-	orientation: "horizontal"
-	height: 50
-	Label:
-		text: "%s (%s euros)" % (root.uv, root.prix*0.06)
-		size_hint: (0.7, 1)
-		halign: "left"
-		valign: "bottom"
-		font_size: 15
-	Button:
-		text: "Supprimer"
-		background_color: [220/255.,12/255.,12/255.,1]
-		size_hint: (0.3, 0.8)
-		on_release: root.suppr_pressed()
+    orientation: "horizontal"
+    height: 50
+    Label:
+        text: "%s (%s euros)" % (root.uv, root.prix*0.06)
+        size_hint: (0.7, 1)
+        halign: "left"
+        valign: "bottom"
+        font_size: 15
+    Button:
+        text: "Supprimer"
+        background_color: [220/255.,12/255.,12/255.,1]
+        size_hint: (0.3, 0.8)
+        on_release: root.suppr_pressed()
 
 <Panier>:
-	spacing: 5
+    spacing: 5
 
-	Label:
-		text: "Panier"
-		height: 40
-		font_size: 25
+    Label:
+        text: "Panier"
+        height: 30
+        font_size: 25
 
-	BoxLayout:
-		orientation: "horizontal"
-		height: 50
-		Label:
-			text: "Total : %s euros" % (root.prix*0.06)
-			font_size: 20
-			size_hint: (0.7, 1)
-		Button:
-			text: "Valider la commande"
-			font_size: 20
-			size: (0.3, 1)
-			background_color: [0,181/255.,38/255.,1]
-			on_release: root.valider_commande()
+    BoxLayout:
+        orientation: "horizontal"
+        height: 50
+        Label:
+            text: "Total : %s euros" % (root.prix*0.06)
+            font_size: 20
+            size_hint: (0.7, 1)
+        Button:
+            text: "Valider la commande"
+            font_size: 20
+            size: (0.3, 1)
+            background_color: [0,181/255.,38/255.,1]
+            on_release: root.valider_commande()
 
 <LoginContent>:
-	login: login_
-	buttonsbox: buttonsbox_
-	bouton_commander: bouton_commander_
-	txt: txt_
+    login: login_
+    buttonsbox: buttonsbox_
+    bouton_commander: bouton_commander_
+    txt: txt_
 
-	StackLayout:
-		id: content_
-		size_hint: 1, 1
-		spacing: 15
-		padding: 15
+    StackLayout:
+        id: content_
+        size_hint: 1, 1
+        spacing: 15
+        padding: 15
 
-		BoxLayout:
-			height: 40
-			orientation: "horizontal"
+        BoxLayout:
+            height: 40
+            orientation: "horizontal"
 
-			Label:
-				text: "Login UTC"
-				font_size: 15
-				size_hint: 0.2, 1
+            Label:
+                text: "Login UTC"
+                font_size: 15
+                size_hint: 0.2, 1
 
-			TextInput:
-				multiline: False
-				focus: True
-				font_size: 20
-				size_hint: 0.8, 1
-				id: login_
-				on_text: root.on_text_change()
+            TextInput:
+                multiline: False
+                focus: True
+                font_size: 20
+                size_hint: 0.8, 1
+                id: login_
+                on_text: root.on_text_change()
 
-		Label:
-			font_size: 20
-			id: txt_
+        Label:
+            font_size: 20
+            id: txt_
 
-		Label:
-			text: "%s" % (root.nb_commande)
-			font_size: 150
-			height: 330
+        Label:
+            text: "%s" % (root.nb_commande)
+            font_size: 150
+            height: 330
 
-		BoxLayout:
-			orientation: "horizontal"
-			spacing: 15
-			id: buttonsbox_
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
+            id: buttonsbox_
 
-			Button:
-				text: "Valider la commande"
-				font_size: 25
-				background_color: [0,181/255.,38/255.,1]
-				on_release: root.commander_pressed()
-				id: bouton_commander_
+            Button:
+                text: "Valider la commande"
+                font_size: 25
+                background_color: [0,181/255.,38/255.,1]
+                on_release: root.commander_pressed()
+                id: bouton_commander_
 
-			Button:
-				text: "Retour"
-				font_size: 25
-				background_color: [220/255.,12/255.,12/255.,1]
-				on_release: root.parent_.dismiss()
+            Button:
+                text: "Retour"
+                font_size: 25
+                background_color: [220/255.,12/255.,12/255.,1]
+                on_release: root.parent_.dismiss()
 
 <DetailsContent>:
-	tree: tree_
+    tree: tree_
 
-	StackLayout:
-		id: content_
-		size_hint: 1, 1
-		spacing: 15
-		padding: 15
+    StackLayout:
+        id: content_
+        size_hint: 1, 1
+        spacing: 15
+        padding: 15
 
-		ScrollView:
+        ScrollView:
 
-			size_hint: None, None
-			do_scroll_x: False
-			size: 850, 485
+            size_hint: None, None
+            do_scroll_x: False
+            size: 850, 485
 
-			TreeView:
-				id: tree_
-				size_hint_y: None
-				hide_root: True
+            TreeView:
+                id: tree_
+                size_hint_y: None
+                hide_root: True
 
-		BoxLayout:
-			orientation: "horizontal"
-			spacing: 15
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 15
 
-			Button:
-				text: "Valider la commande"
-				font_size: 25
-				background_color: [0,181/255.,38/255.,1]
-				on_release: root.commander_pressed()
+            Button:
+                text: "Valider la commande"
+                font_size: 25
+                background_color: [0,181/255.,38/255.,1]
+                on_release: root.commander_pressed()
 
-			Button:
-				text: "Retour"
-				font_size: 25
-				background_color: [220/255.,12/255.,12/255.,1]
-				on_release: root.parent_.dismiss()
+            Button:
+                text: "Retour"
+                font_size: 25
+                background_color: [220/255.,12/255.,12/255.,1]
+                on_release: root.parent_.dismiss()
 
 <Popup>:
-	size_hint: None, None
-	pos_hint: {"center_x": 0.5, "center_y": 0.5}
-	size: 900, 700
+    size_hint: None, None
+    pos_hint: {"center_x": 0.5, "center_y": 0.5}
+    size: 900, 700
 
 <RechercheUV>:
-	spacing: 10
-	orientation: "lr-tb"
-	scroll: scrollview_
-	txt_input: txt_input_
+    spacing: 10
+    orientation: "lr-tb"
+    scroll: scrollview_
+    txt_input: txt_input_
 
-	Label:
-		text: "UVs disponibles"
-		height: 40
-		font_size: 25
+    Label:
+        text: "UVs disponibles"
+        height: 30
+        font_size: 25
 
-	ScrollView:
-		size_hint: None, None
-		size: 650, 630
-		do_scroll_x: False
-		bar_width: 10
-		bar_margin: 0
-		id:scrollview_
+    ScrollView:
+        size_hint: None, None
+        size: 650, 650
+        do_scroll_x: False
+        bar_width: 10
+        bar_margin: 0
+        id:scrollview_
 
-	TextInput:
-		multiline: False
-		focus: True
-		font_size: 20
-		height: 40
-		on_text: root.on_text_change(self.text)
-		id: txt_input_
+    TextInput:
+        multiline: False
+        focus: True
+        font_size: 20
+        height: 40
+        on_text: root.on_text_change(self.text)
+        id: txt_input_
