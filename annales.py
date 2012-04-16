@@ -95,20 +95,31 @@ class Panier(StackLayout):
 
 class RechercheUV(StackLayout):
     nb_uvs = 0
-    nb_uvs_affichees = 0
+    liste_lettres = {}
+    tree = None
 
     def __init__(self, **kwargs):
         super(RechercheUV, self).__init__(**kwargs)
 
         self.register_event_type("on_row_selected")
 
-        self.uvs = data.update_liste_uvs()
+        uvs = data.update_liste_uvs()
+        self.uvs = [uv for uv in uvs if uv[1]!=0] #j'aime !
+        self.nb_uvs = len(self.uvs)
 
     def reset(self):
         self.txt_input.text = ""
 
     def on_text_change(self, valeur):
-        self.fill_tree(valeur)
+        if valeur == "":
+            if (self.tree == None):
+                self.fill_tree("")
+        else:
+            h = (self.tree.height*1.0)/self.nb_uvs
+            nb_uvs_avant = self.liste_lettres[valeur.upper()[0]]
+
+            dx, dy = self.scroll.convert_distance_to_scroll(0, nb_uvs_avant*h)
+            self.scroll.scroll_y = 1-dy
 
     def fill_tree(self, filtre):
         self.scroll.clear_widgets()
@@ -118,15 +129,23 @@ class RechercheUV(StackLayout):
                   selected_node=self.show_details)
         self.scroll.add_widget(tree)
 
-        self.nb_uvs_affichees = 0
+        lettre_en_cours = "";
 
-        for uv in self.uvs:
+        for numero, uv in enumerate(self.uvs):
             if uv[0].startswith(filtre.upper()) and uv[1] != 0:
-                tree.add_node(TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
+                node = TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
                                                                    uv[1]*0.06),
                                             font_size=30, size_hint_y=None,
-                                            padding=(20,20)))
-                self.nb_uvs_affichees += 1
+                                            padding=(20,20))
+                tree.add_node(node)
+
+                if uv[0][0] != lettre_en_cours:
+                    lettre_en_cours = uv[0][0]
+                    self.liste_lettres[lettre_en_cours[0]] = numero
+
+        print self.liste_lettres
+
+        self.tree = tree
 
     def show_details(self, instance, value):
         self.dispatch("on_row_selected", value.text[0:4])
