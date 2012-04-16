@@ -95,7 +95,6 @@ class Panier(StackLayout):
 
 class RechercheUV(StackLayout):
     nb_uvs = 0
-    liste_lettres = {}
     tree = None
 
     def __init__(self, **kwargs):
@@ -109,15 +108,32 @@ class RechercheUV(StackLayout):
 
     def reset(self):
         self.txt_input.text = ""
+        self.txt_input.focus = True
 
     def on_text_change(self, valeur):
         if valeur == "":
+            self.txt_input.background_color = [1, 1, 1, 1]
             if (self.tree == None):
                 self.fill_tree("")
+            else:
+                self.scroll.scroll_y = 1
         else:
-            h = (self.tree.height*1.0)/self.nb_uvs
-            nb_uvs_avant = self.liste_lettres[valeur.upper()[0]]
+            nb_uvs_avant = 0
+            valeur = valeur.upper()
+            #on cherche si il y a une uv qui commence par valeur
+            for i, uv in enumerate(self.uvs):
+                if uv[0].startswith(valeur):
+                    nb_uvs_avant = i
+                    break;
 
+            #si il n'y en a pas on met un fond rouge au textinput
+            if nb_uvs_avant is 0 and not self.uvs[0][0].startswith(valeur):
+                self.txt_input.background_color = [220/255.,12/255.,12/255.,1]
+            else:
+                self.txt_input.background_color = [1, 1, 1, 1]
+
+            #ensuite on va au bon endroit dans la scroll view
+            h = (self.tree.height*1.0)/self.nb_uvs
             dx, dy = self.scroll.convert_distance_to_scroll(0, nb_uvs_avant*h)
             self.scroll.scroll_y = 1-dy
 
@@ -129,21 +145,13 @@ class RechercheUV(StackLayout):
                   selected_node=self.show_details)
         self.scroll.add_widget(tree)
 
-        lettre_en_cours = "";
-
-        for numero, uv in enumerate(self.uvs):
+        for uv in self.uvs:
             if uv[0].startswith(filtre.upper()) and uv[1] != 0:
                 node = TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
                                                                    uv[1]*0.06),
                                             font_size=30, size_hint_y=None,
                                             padding=(20,20))
                 tree.add_node(node)
-
-                if uv[0][0] != lettre_en_cours:
-                    lettre_en_cours = uv[0][0]
-                    self.liste_lettres[lettre_en_cours[0]] = numero
-
-        print self.liste_lettres
 
         self.tree = tree
 
