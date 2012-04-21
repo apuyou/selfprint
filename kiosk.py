@@ -16,6 +16,9 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.treeview import TreeView, TreeViewLabel
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
+from kivy.properties import Property
+
+import poppler
 
 import os, time
 
@@ -26,6 +29,22 @@ class PolarKiosque(FloatLayout):
 	pass
 
 class PreviewScreen(FloatLayout):
+        nb_pages = Property(0)
+        prix_page = Property(0.04)
+        doc_path = Property("")
+
+        def __init__(self, path_to_file, **kwargs):
+                super(PreviewScreen, self).__init__(**kwargs)
+
+                self.doc_path = os.path.abspath(path_to_file) # check if exists, blabla
+                self.load_pdf()
+
+        def load_pdf(self):
+                print self.doc_path
+                self.doc = poppler.document_new_from_file("file://"+self.doc_path, None)
+                self.nb_pages = self.doc.get_n_pages()
+                print self.nb_pages
+
 	def on_release_choix(self, instance, value):
 		value._do_press()
 		print 'iam'
@@ -96,8 +115,7 @@ class PolarKiosqueApp(App):
 						tree.add_node(TreeViewLabel(text=label, no_selection=True), dirNodes[root]) # FIXME Faire du gris
 
 	def show_file(self, instance, value):
-		ps = PreviewScreen()
-		ps.path.text = 'Lecture de %s' % (value.path)
+		ps = PreviewScreen(value.path)
 
 		self.content.clear_widgets()
 		self.content.add_widget(ps)
@@ -117,6 +135,7 @@ class PolarKiosqueApp(App):
 		self.content.add_widget(w)
 
 		Clock.schedule_interval(self.check_key, 1)
+		Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
 
 		return sc
 

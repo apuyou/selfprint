@@ -95,38 +95,65 @@ class Panier(StackLayout):
 
 class RechercheUV(StackLayout):
     nb_uvs = 0
-    nb_uvs_affichees = 0
+    tree = None
 
     def __init__(self, **kwargs):
         super(RechercheUV, self).__init__(**kwargs)
 
         self.register_event_type("on_row_selected")
 
-        self.uvs = data.update_liste_uvs()
+        uvs = data.update_liste_uvs()
+        self.uvs = [uv for uv in uvs if uv[1]!=0] #j'aime !
+        self.nb_uvs = len(self.uvs)
 
     def reset(self):
         self.txt_input.text = ""
+        self.txt_input.focus = True
 
     def on_text_change(self, valeur):
-        self.fill_tree(valeur)
+        if valeur == "":
+            self.txt_input.background_color = [1, 1, 1, 1]
+            if (self.tree == None):
+                self.fill_tree("")
+            else:
+                self.scroll.scroll_y = 1
+        else:
+            nb_uvs_avant = 0
+            valeur = valeur.upper()
+            #on cherche si il y a une uv qui commence par valeur
+            for i, uv in enumerate(self.uvs):
+                if uv[0].startswith(valeur):
+                    nb_uvs_avant = i
+                    break;
+
+            #si il n'y en a pas on met un fond rouge au textinput
+            if nb_uvs_avant is 0 and not self.uvs[0][0].startswith(valeur):
+                self.txt_input.background_color = [220/255.,12/255.,12/255.,1]
+            else:
+                self.txt_input.background_color = [1, 1, 1, 1]
+
+            #ensuite on va au bon endroit dans la scroll view
+            h = (self.tree.height*1.0)/self.nb_uvs
+            dx, dy = self.scroll.convert_distance_to_scroll(0, nb_uvs_avant*h)
+            self.scroll.scroll_y = 1-dy
 
     def fill_tree(self, filtre):
         self.scroll.clear_widgets()
 
-        tree = TreeView(hide_root=True, size_hint_y=None)
+        tree = TreeView(hide_root=True, size_hint_y=None, size_hint_x = 0.6)
         tree.bind(minimum_height=tree.setter('height'),
                   selected_node=self.show_details)
         self.scroll.add_widget(tree)
 
-        self.nb_uvs_affichees = 0
-
         for uv in self.uvs:
             if uv[0].startswith(filtre.upper()) and uv[1] != 0:
-                tree.add_node(TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
+                node = TreeViewLabel(text=u"%s   (%s €)" % (uv[0],
                                                                    uv[1]*0.06),
-                                            font_size=20, size_hint_y=None,
-                                            padding=(20,20)))
-                self.nb_uvs_affichees += 1
+                                            font_size=30, size_hint_y=None,
+                                            padding=(20,20))
+                tree.add_node(node)
+
+        self.tree = tree
 
     def show_details(self, instance, value):
         self.dispatch("on_row_selected", value.text[0:4])
@@ -275,16 +302,18 @@ class AnnalesApp(App):
         bigbox = BoxLayout(orientation="horizontal", padding=20, spacing=20)
         self.root.add_widget(bigbox)
 
-        self.panier = Panier()
-        self.panier.bind(on_valider_commande=self.valider_commande)
-        bigbox.add_widget(self.panier)
-
         self.recherche = RechercheUV()
         self.recherche.bind(on_row_selected=self.on_row_selected)
         bigbox.add_widget(self.recherche)
 
-        #Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
+        self.panier = Panier()
+        self.panier.bind(on_valider_commande=self.valider_commande)
+        bigbox.add_widget(self.panier)
+
+        Clock.schedule_once(lambda a: self.root.get_parent_window().toggle_fullscreen())
         return self.root
 
 if __name__ == "__main__":
+    Config.set('graphics', 'fullscreen', 'auto')
+    Config.write()
     AnnalesApp().run()
