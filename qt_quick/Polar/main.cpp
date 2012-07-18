@@ -17,7 +17,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     viewer.rootContext()->setContextProperty("modelUVs", uvmodel);
     viewer.rootContext()->setContextProperty("filteredUVs", proxymodel);
     viewer.setMainQmlFile(QLatin1String("qml/Polar/main.qml"));
-    viewer.showExpanded(); //viewer.showFullScreen();
+    viewer.showFullScreen();
 
     return app->exec();
 }
